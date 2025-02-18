@@ -1,24 +1,40 @@
-import {db } from './firebase';
-import { collection,getDoc,addDoc } from 'firebase/firestore';
+import { db } from "./firebase"
+import { collection, addDoc, getDocs } from "firebase/firestore"
 
+export const createQuiz = async (quizData) => {
+  try {
+    const docRef = await addDoc(collection(db, "quizzes"), quizData)
+    return docRef.id
+  } catch (error) {
+    console.error("Error creating quiz:", error)
+    throw error
+  }
+}
 
-export const getQuizzes= async()=>{
-    const quizzSnapshot= await getDoc(collection(db,"quizzes"));
-    return quizzSnapshot.docs.map(doc=>({id:doc.id,title:doc.data().title}));
-};
+export const getQuizzes = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "quizzes"))
+    return querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }))
+  } catch (error) {
+    console.error("Error fetching quizzes:", error)
+    throw error
+  }
+}
 
-
-export const fetchQuizById= async(id)=>{
-    const quizDoc= await getDoc(collection(db,"quizzes",id));
-
-    return quizDoc.exists()?{id:quizDoc.id,...quizDoc.data()}:null;
-};
-
-export const createQuiz= async(data)=>{
-    try{
-        await addDoc(collection(db,"quizzes"),data);
-    }catch(error){
-        console.log("Error createing quiz: ",error);
-    }
-};
+export const saveQuizScore = async (userId, quizId, score) => {
+  try {
+    await addDoc(collection(db, "scores"), {
+      userId,
+      quizId,
+      score,
+      timestamp: new Date(),
+    })
+  } catch (error) {
+    console.error("Error saving score:", error)
+    throw error
+  }
+}
 
